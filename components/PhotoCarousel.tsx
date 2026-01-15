@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FriendMemory } from '../types';
 
 interface Props {
@@ -8,17 +8,91 @@ interface Props {
 
 const PhotoCarousel: React.FC<Props> = ({ memories, onSelect }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Swipe State
+  const startX = useRef<number | null>(null);
+  const currentX = useRef<number | null>(null);
+  const isDragging = useRef<boolean>(false);
 
   useEffect(() => {
+    if (isPaused) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % memories.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [memories.length]);
+  }, [memories.length, isPaused, activeIndex]);
+
+  const handleDragStart = (clientX: number) => {
+    startX.current = clientX;
+    isDragging.current = true;
+    setIsPaused(true);
+    if (containerRef.current) containerRef.current.style.cursor = 'grabbing';
+  };
+
+  const handleDragMove = (clientX: number) => {
+    if (!isDragging.current) return;
+    currentX.current = clientX;
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    setIsPaused(false);
+    if (containerRef.current) containerRef.current.style.cursor = 'grab';
+
+    if (startX.current !== null && currentX.current !== null) {
+      const diff = startX.current - currentX.current;
+      const threshold = 50;
+
+      if (diff > threshold) {
+        // Swiped Left -> Next
+        setActiveIndex((prev) => (prev + 1) % memories.length);
+      } else if (diff < -threshold) {
+        // Swiped Right -> Prev
+        setActiveIndex((prev) => (prev - 1 + memories.length) % memories.length);
+      }
+    }
+    
+    startX.current = null;
+    currentX.current = null;
+  };
+
+  // Touch Events
+  const onTouchStart = (e: React.TouchEvent) => handleDragStart(e.touches[0].clientX);
+  const onTouchMove = (e: React.TouchEvent) => handleDragMove(e.touches[0].clientX);
+  const onTouchEnd = () => handleDragEnd();
+
+  // Mouse Events
+  const onMouseDown = (e: React.MouseEvent) => handleDragStart(e.clientX);
+  const onMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX);
+  const onMouseUp = () => handleDragEnd();
+  const onMouseLeave = () => {
+    if (isDragging.current) handleDragEnd();
+  };
+
+  const handleClick = (memory: FriendMemory, isCurrent: boolean) => {
+    // Only allow click if we didn't just swipe significantly
+    // Logic: if startX and currentX are null (reset by dragEnd), it's safe.
+    // Ideally check if a drag happened. 
+    // For now, if user clicks without dragging, it fires.
+    if (isCurrent) onSelect(memory);
+  };
 
   return (
-    <div className="w-full max-w-5xl mx-auto h-[400px] sm:h-[500px] relative perspective-1000">
-      <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-3xl glass-panel">
+    <div 
+        ref={containerRef}
+        className="w-full max-w-5xl mx-auto h-[400px] sm:h-[500px] relative perspective-1000 group select-none touch-pan-y"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseLeave}
+    >
+      <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-3xl glass-panel cursor-grab active:cursor-grabbing transition-transform">
         
         {/* Background Blur Image */}
         <div 
@@ -28,33 +102,35 @@ const PhotoCarousel: React.FC<Props> = ({ memories, onSelect }) => {
 
         <div className="relative w-full h-full flex items-center justify-center p-8">
             {memories.map((mem, index) => {
-                // Calculate relative position for transition effects
                 const isCurrent = index === activeIndex;
                 const isNext = index === (activeIndex + 1) % memories.length;
                 const isPrev = index === (activeIndex - 1 + memories.length) % memories.length;
                 
-                let className = "absolute transition-all duration-700 ease-out cursor-pointer shadow-2xl rounded-2xl overflow-hidden border-4 border-white/30 ";
+                let className = "absolute transition-all duration-700 ease-out shadow-2xl rounded-2xl overflow-hidden border-4 border-white/30 ";
                 
                 if (isCurrent) {
                     className += "w-[280px] h-[380px] sm:w-[350px] sm:h-[450px] z-30 opacity-100 scale-100 rotate-0 hover:scale-105";
                 } else if (isNext) {
-                    className += "w-[240px] h-[320px] z-20 opacity-60 translate-x-[60%] scale-90 rotate-6 grayscale hover:grayscale-0";
+                    className += "w-[240px] h-[320px] z-20 opacity-60 translate-x-[60%] scale-90 rotate-6 grayscale";
                 } else if (isPrev) {
-                    className += "w-[240px] h-[320px] z-20 opacity-60 -translate-x-[60%] scale-90 -rotate-6 grayscale hover:grayscale-0";
+                    className += "w-[240px] h-[320px] z-20 opacity-60 -translate-x-[60%] scale-90 -rotate-6 grayscale";
                 } else {
-                    className += "w-[200px] h-[280px] z-10 opacity-0 scale-75";
+                    className += "w-[200px] h-[280px] z-10 opacity-0 scale-75 pointer-events-none";
                 }
 
                 return (
                     <div 
                         key={mem.id}
                         className={className}
-                        onClick={() => isCurrent && onSelect(mem)}
+                        onClick={(e) => {
+                            e.stopPropagation(); 
+                            handleClick(mem, isCurrent);
+                        }}
                     >
                         <img 
                             src={mem.imageUrl} 
                             alt={mem.name} 
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover pointer-events-none"
                         />
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-white">
                             <p className="font-bold text-lg">{mem.name}</p>
