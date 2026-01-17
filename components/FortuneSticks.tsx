@@ -308,7 +308,7 @@ const FortuneSticks: React.FC = () => {
         {/* Compact layout: on mobile stack tighter */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-5 md:gap-12">
           {/* LEFT: Cylinder (smaller on mobile) */}
-          <div className="relative group perspective-[1000px] z-10 scale-[0.78] sm:scale-[0.88] md:scale-100 origin-center">
+          <div className="relative group perspective-[1000px] z-10 scale-[0.78] sm:scale-[0.88] md:scale-100 origin-center translate-y-3 sm:translate-y-0">
             <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-36 h-7 bg-black/20 dark:bg-black/40 blur-xl rounded-[100%]" />
 
             <div
