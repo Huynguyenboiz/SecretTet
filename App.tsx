@@ -8,6 +8,7 @@ import LuckyMoneyGame from './components/LuckyMoneyGame';
 import CountdownTimer from './components/CountdownTimer';
 import EffectsLayer from './components/EffectsLayer';
 import FortuneSticks from './components/FortuneSticks';
+import MemoryCardGame from './components/MemoryCardGame.tsx';
 import { MEMORIES } from './constants';
 import { FriendMemory } from './types';
 import { Clover, Flower2, Wind } from 'lucide-react';
@@ -116,6 +117,11 @@ const App: React.FC = () => {
         {/* Fortune Sticks (Gieo Quẻ) Section */}
         <section className="w-full animate-fade-in-up delay-300">
              <FortuneSticks />
+        </section>
+
+        {/* Memory Card Game (Lật Thẻ) Section */}
+        <section className="w-full animate-fade-in-up delay-400">
+             <MemoryCardGame />
         </section>
 
         {/* Footer */}
