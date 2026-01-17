@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import ThemeToggle from './components/ThemeToggle';
 import GreetingPopup from './components/GreetingPopup';
 import MusicPlayer from './components/MusicPlayer';
@@ -18,12 +18,21 @@ const App: React.FC = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isEffectOn, setIsEffectOn] = useState(true);
 
+  // Ref for the Lucky Money Section
+  const luckyMoneyRef = useRef<HTMLElement>(null);
+
   const handleMemorySelect = (memory: FriendMemory) => {
     setSelectedMemory(memory);
   };
 
   const handleInteractionComplete = () => {
     setHasInteracted(true);
+    // Smooth scroll to the Lucky Money section after a brief delay to allow state update
+    setTimeout(() => {
+        if (luckyMoneyRef.current) {
+            luckyMoneyRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, 100);
   };
 
   return (
@@ -110,7 +119,14 @@ const App: React.FC = () => {
         </section>
 
         {/* Lucky Money Section - Appears after interaction */}
-        <section className={`w-full transition-all duration-1000 ${hasInteracted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
+        <section 
+            ref={luckyMoneyRef}
+            className={`
+                w-full transition-all duration-1000 
+                ${hasInteracted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}
+                ${hasInteracted ? 'animate-pulse-highlight' : ''}
+            `}
+        >
              <LuckyMoneyGame isVisible={hasInteracted} />
         </section>
 
@@ -139,6 +155,18 @@ const App: React.FC = () => {
             onComplete={handleInteractionComplete}
         />
       )}
+
+      <style>{`
+        @keyframes highlight-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+            30% { box-shadow: 0 0 0 20px rgba(255, 215, 0, 0.1); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+        .animate-pulse-highlight {
+            animation: highlight-pulse 2s ease-out;
+            border-radius: 2rem;
+        }
+      `}</style>
 
     </div>
   );
