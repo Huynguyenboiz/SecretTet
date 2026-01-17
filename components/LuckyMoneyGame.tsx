@@ -317,7 +317,7 @@ const LuckyMoneyGame: React.FC<Props> = ({ isVisible }) => {
             {gameState === GameState.WON ? "Gọi tôi là gì?" : "Chọn lì xì"}
           </h3>
 
-          <div className="flex flex-wrap justify-center gap-6 sm:gap-12 min-h-[200px] items-center">
+          <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-12 min-h-[200px] place-items-center">
             {envelopes.map((env, index) => {
               const isSelected = selectedId === env.id;
               const isOther = selectedId !== null && !isSelected;
@@ -329,7 +329,7 @@ const LuckyMoneyGame: React.FC<Props> = ({ isVisible }) => {
                   type="button"
                   disabled={shuffling || selectedId !== null}
                   className={`
-                    relative w-32 h-48 sm:w-40 sm:h-56 cursor-pointer transition-all duration-500
+                    relative w-24 h-36 xs:w-28 xs:h-44 sm:w-40 sm:h-56 cursor-pointer transition-all duration-500
                     ${shuffling ? "animate-shuffle" : ""}
                     ${isSelected ? "scale-110 -translate-y-4 z-20" : ""}
                     ${isOther ? "opacity-50 blur-sm scale-90" : ""}
