@@ -13,7 +13,7 @@ export const MEMORIES: FriendMemory[] = [
     id: 2,
     imageUrl: "https://i.ibb.co/nqzLystR/chi.jpg",
     name: "Kim Chi",
-    letter: "Hey Kim Chi, I hope you achieve that scholarship you’ve been working toward. Stay cheerful, keep things strong and steady with L.",
+    letter: "Hey Kim Chi, I hope you achieve that scholarship you’ve been working toward. Stay cheerful, keep things strong and steady with those who deserve it more.",
     greeting: "Wishing you a year full of perfect brews and peaceful moments.",
     personalizedPhotoUrl: "https://i.ibb.co/nqzLystR/chi.jpg"
   },
